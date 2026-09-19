@@ -1,0 +1,55 @@
+// use prisma-next
+
+model Workspace {
+  id        Int        @id @default(autoincrement())
+  name      String
+  createdAt DateTime   @default(now())
+
+  users     User[]
+  feedback  Feedback[]
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String    @unique
+  password    String
+  role        String    @default("VIEWER")
+  workspaceId Int
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model Feedback {
+  id          Int       @id @default(autoincrement())
+  feedback    String
+  sentiment   String?
+  score       Int?
+  featureArea String?
+  status      String    @default("NEW")
+  workspaceId Int
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+  themes      FeedbackTheme[]
+}
+
+model Theme {
+  id        Int             @id @default(autoincrement())
+  name      String
+  createdAt DateTime        @default(now())
+
+  feedback  FeedbackTheme[]
+}
+
+model FeedbackTheme {
+  id         Int      @id @default(autoincrement())
+  feedbackId Int
+  themeId    Int
+
+  feedback   Feedback @relation(fields: [feedbackId], references: [id])
+  theme      Theme    @relation(fields: [themeId], references: [id])
+
+  @@unique([feedbackId, themeId])
+}
