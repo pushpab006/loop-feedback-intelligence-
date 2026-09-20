@@ -54,7 +54,7 @@ export default function Login() {
         JSON.stringify(data.user)
       );
 
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Login error:", error);
 
