@@ -20,7 +20,7 @@ try {
   }
 
   const response = await fetch(
-    "http://localhost:5000/api/ask-loop",
+    "https://loop-feedback-intelligence.onrender.com/api/ask-loop",
     {
       method: "POST",
       headers: {

@@ -27,7 +27,7 @@ export default function AddFeedback() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/feedback",
+        "https://loop-feedback-intelligence.onrender.com/api/feedback",
         {
           method: "POST",
           headers: {

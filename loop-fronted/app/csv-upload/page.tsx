@@ -33,7 +33,7 @@ export default function CSVUpload() {
       formData.append("file", file);
 
       const response = await fetch(
-        "http://localhost:5000/api/feedback/upload-csv",
+        "https://loop-feedback-intelligence.onrender.com/api/feedback/upload-csv",
         {
           method: "POST",
           headers: {

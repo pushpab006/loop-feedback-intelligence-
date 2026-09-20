@@ -31,7 +31,7 @@ export default function UsersPage() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/users",
+        "https://loop-feedback-intelligence.onrender.com/api/users",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ export default function UsersPage() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/users",
+        "https://loop-feedback-intelligence.onrender.com/api/users",
         {
           method: "POST",
           headers: {

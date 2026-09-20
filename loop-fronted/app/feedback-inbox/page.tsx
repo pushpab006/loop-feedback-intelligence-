@@ -31,7 +31,7 @@ export default function FeedbackInbox() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/feedback",
+        "https://loop-feedback-intelligence.onrender.com/api/feedback",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ export default function FeedbackInbox() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/feedback/${id}/status`,
+        `https://loop-feedback-intelligence.onrender.com/api/feedback/$%7Bid%7D/status`,
         {
           method: "PATCH",
           headers: {
