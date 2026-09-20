@@ -1,391 +1,606 @@
 "use client";
 
-export default function Reports() {
+import { useEffect, useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  BarChart,
+  Bar,
+} from "recharts";
+
+type Feedback = {
+  id: number;
+  feedback: string;
+  sentiment: string | null;
+  score: number | null;
+  featureArea: string | null;
+  status: string;
+  createdAt: string;
+};
+
+export default function Dashboard() {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.log("No login token found");
+          setFeedbacks([]);
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+  "https://loop-feedback-intelligence.onrender.com/api/feedback",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+        const data = await response.json();
+
+        console.log("Dashboard feedback response:", data);
+
+        if (!response.ok) {
+          console.error("Failed to fetch feedback:", data);
+          setFeedbacks([]);
+          return;
+        }
+
+        if (Array.isArray(data)) {
+          setFeedbacks(data);
+        } else {
+          console.error(
+            "Expected feedback array but received:",
+            data
+          );
+          setFeedbacks([]);
+        }
+      } catch (error) {
+        console.error("Dashboard error:", error);
+        setFeedbacks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeedback();
+  }, []);
+
+  const totalFeedback = feedbacks.length;
+
+  const positive = feedbacks.filter(
+    (item) => item.sentiment === "POSITIVE"
+  ).length;
+
+  const negative = feedbacks.filter(
+    (item) => item.sentiment === "NEGATIVE"
+  ).length;
+
+  const neutral = feedbacks.filter(
+    (item) => item.sentiment === "NEUTRAL"
+  ).length;
+
+  const sentimentData = [
+    { name: "Positive", value: positive },
+    { name: "Negative", value: negative },
+    { name: "Neutral", value: neutral },
+  ];
+
+  const themeCount: Record<string, number> = {};
+
+  feedbacks.forEach((item) => {
+    const theme = item.featureArea || "Other";
+
+    themeCount[theme] = (themeCount[theme] || 0) + 1;
+  });
+
+  const topThemes = Object.entries(themeCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, value]) => ({
+      name,
+      value,
+    }));
+
+  const volumeMap: Record<string, number> = {};
+
+  feedbacks.forEach((item) => {
+    const date = new Date(
+      item.createdAt
+    ).toLocaleDateString();
+
+    volumeMap[date] =
+      (volumeMap[date] || 0) + 1;
+  });
+
+  const volumeData = Object.entries(volumeMap).map(
+    ([date, count]) => ({
+      date,
+      count,
+    })
+  );
+
+  const recentFeedback = [...feedbacks]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
+    )
+    .slice(0, 5);
+
+  function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("loopUser");
+    window.location.href = "/login";
+  }
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-600">
+          Loading dashboard...
+        </p>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex">
+    <main className="min-h-screen bg-gray-50">
 
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 p-6 hidden md:block">
-
-        <h1 className="text-3xl font-bold text-blue-500 mb-10">
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r bg-white p-6 md:flex">
+        <h1 className="text-2xl font-bold text-indigo-600">
           LOOP
         </h1>
 
-        <nav className="space-y-3">
+        <p className="mt-1 text-sm text-gray-500">
+          Customer Feedback Intelligence
+        </p>
 
-          <div className="px-4 py-3 text-slate-400">
+        <nav className="mt-8 space-y-2">
+
+          <a
+            href="/"
+            className="block rounded-lg bg-indigo-50 px-4 py-3 font-medium text-indigo-600"
+          >
             Dashboard
-          </div>
+          </a>
 
-          
+          <a
+            href="/add-feedback"
+            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
+          >
+            Add Feedback
+          </a>
 
-          <div className="px-4 py-3 text-slate-400">
+          <a
+            href="/feedback-inbox"
+            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
+          >
             Feedback Inbox
-          </div>
+          </a>
 
-          <div className="px-4 py-3 text-slate-400">
+          <a
+            href="/themes-trends"
+            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
+          >
             Themes & Trends
-          </div>
+          </a>
 
-          <div className="px-4 py-3 text-slate-400">
+          <a
+            href="/ask-loop"
+            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
+          >
             Ask LOOP
-          </div>
+          </a>
 
-          <div className="bg-blue-600 rounded-lg px-4 py-3">
+          <a
+            href="/reports"
+            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
+          >
             Reports
-          </div>
+          </a>
 
+          <a
+            href="/csv-upload"
+            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
+          >
+            CSV Upload
+          </a>
+
+          <a
+            href="/users"
+            className="block rounded-lg px-4 py-3 font-medium text-gray-800 hover:bg-gray-100"
+          >
+            User Management
+          </a>
         </nav>
 
+        <button
+          onClick={logout}
+          className="mt-10 w-full rounded-lg bg-red-600 px-4 py-3 font-medium text-white hover:bg-red-700"
+        >
+          Logout
+        </button>
       </aside>
 
-      {/* Main */}
-      <section className="flex-1 p-6 md:p-10">
 
-        <div className="max-w-6xl mx-auto">
+      {/* ================= MOBILE NAVIGATION ================= */}
+      <div className="border-b bg-white p-4 md:hidden">
+
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-indigo-600">
+            LOOP
+          </h1>
+
+          <p className="text-xs text-gray-500">
+            Customer Feedback Intelligence
+          </p>
+        </div>
+
+        <nav className="grid grid-cols-2 gap-2">
+
+          <a
+            href="/"
+            className="rounded-lg bg-indigo-50 px-3 py-3 text-sm font-medium text-indigo-600"
+          >
+            Dashboard
+          </a>
+
+          <a
+            href="/add-feedback"
+            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Add Feedback
+          </a>
+
+          <a
+            href="/feedback-inbox"
+            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Feedback Inbox
+          </a>
+
+          <a
+            href="/themes-trends"
+            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Themes & Trends
+          </a>
+
+          <a
+            href="/ask-loop"
+            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Ask LOOP
+          </a>
+
+          <a
+            href="/reports"
+            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Reports
+          </a>
+
+          <a
+            href="/csv-upload"
+            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            CSV Upload
+          </a>
+
+          <a
+            href="/users"
+            className="rounded-lg px-3 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100"
+          >
+            User Management
+          </a>
+
+          <button
+            onClick={logout}
+            className="col-span-2 rounded-lg bg-red-600 px-3 py-3 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </nav>
+      </div>
+
+
+      {/* ================= MAIN CONTENT ================= */}
+      <section className="p-4 sm:p-6 lg:p-8 md:ml-64">
+
+        <div className="mx-auto max-w-7xl">
 
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between gap-5 mb-8">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">
+              Dashboard
+            </h2>
 
-            <div>
-              <h2 className="text-3xl font-bold">
-                Voice of Customer Report
-              </h2>
+            <p className="mt-1 text-gray-500">
+              Monitor customer feedback and AI insights.
+            </p>
+          </div>
 
-              <p className="text-slate-400 mt-2">
-                A summary of what your customers are saying.
+
+          {/* ================= STATS ================= */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Total Feedback
               </p>
+
+              <h3 className="mt-2 text-3xl font-bold text-gray-900">
+                {totalFeedback}
+              </h3>
             </div>
 
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
-              ↓ Download Report
-            </button>
 
-          </div>
-
-          {/* Report Info */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-
-            <div className="flex flex-col md:flex-row justify-between gap-4">
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  REPORT PERIOD
-                </p>
-
-                <p className="text-lg font-semibold mt-1">
-                  August 1 – August 26, 2026
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  FEEDBACK ANALYZED
-                </p>
-
-                <p className="text-lg font-semibold mt-1">
-                  1,248
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  GENERATED BY
-                </p>
-
-                <p className="text-lg font-semibold mt-1">
-                  LOOP AI
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Sentiment */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-
-              <p className="text-slate-400">
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
                 Positive
               </p>
 
-              <p className="text-4xl font-bold text-green-400 mt-2">
-                68%
-              </p>
-
-              <p className="text-sm text-green-400 mt-2">
-                ↑ 8.2% from previous period
-              </p>
-
+              <h3 className="mt-2 text-3xl font-bold text-green-600">
+                {positive}
+              </h3>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
 
-              <p className="text-slate-400">
-                Neutral
-              </p>
-
-              <p className="text-4xl font-bold text-yellow-400 mt-2">
-                18%
-              </p>
-
-              <p className="text-sm text-slate-400 mt-2">
-                Stable
-              </p>
-
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-
-              <p className="text-slate-400">
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
                 Negative
               </p>
 
-              <p className="text-4xl font-bold text-red-400 mt-2">
-                14%
+              <h3 className="mt-2 text-3xl font-bold text-red-600">
+                {negative}
+              </h3>
+            </div>
+
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Neutral
               </p>
 
-              <p className="text-sm text-green-400 mt-2">
-                ↓ 3.4% from previous period
+              <h3 className="mt-2 text-3xl font-bold text-gray-600">
+                {neutral}
+              </h3>
+            </div>
+
+          </div>
+
+
+          {/* ================= CHARTS ================= */}
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+            {/* Sentiment Chart */}
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+
+              <h3 className="text-lg font-semibold text-gray-900">
+                Sentiment Overview
+              </h3>
+
+              {totalFeedback === 0 ? (
+                <div className="flex h-72 items-center justify-center text-gray-500">
+                  No feedback available
+                </div>
+              ) : (
+                <div className="h-72">
+
+                  <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                  >
+                    <PieChart>
+
+                      <Pie
+                        data={sentimentData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        label
+                      >
+                        {sentimentData.map(
+                          (entry, index) => (
+                            <Cell key={index} />
+                          )
+                        )}
+                      </Pie>
+
+                      <Tooltip />
+
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                </div>
+              )}
+
+            </div>
+
+
+            {/* Volume Chart */}
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+
+              <h3 className="text-lg font-semibold text-gray-900">
+                Feedback Volume
+              </h3>
+
+              {volumeData.length === 0 ? (
+                <div className="flex h-72 items-center justify-center text-gray-500">
+                  No feedback available
+                </div>
+              ) : (
+                <div className="h-72">
+
+                  <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                  >
+                    <LineChart data={volumeData}>
+
+                      <CartesianGrid strokeDasharray="3 3" />
+
+                      <XAxis dataKey="date" />
+
+                      <YAxis />
+
+                      <Tooltip />
+
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        strokeWidth={3}
+                      />
+
+                    </LineChart>
+
+                  </ResponsiveContainer>
+
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+
+          {/* ================= TOP THEMES ================= */}
+          <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+
+            <h3 className="text-lg font-semibold text-gray-900">
+              Top Themes
+            </h3>
+
+            {topThemes.length === 0 ? (
+              <div className="flex h-64 items-center justify-center text-gray-500">
+                No themes available
+              </div>
+            ) : (
+              <div className="mt-4 h-64">
+
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                >
+                  <BarChart data={topThemes}>
+
+                    <CartesianGrid strokeDasharray="3 3" />
+
+                    <XAxis dataKey="name" />
+
+                    <YAxis />
+
+                    <Tooltip />
+
+                    <Bar dataKey="value" />
+
+                  </BarChart>
+
+                </ResponsiveContainer>
+
+              </div>
+            )}
+
+          </div>
+
+
+          {/* ================= RECENT FEEDBACK ================= */}
+          <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+              <h3 className="text-lg font-semibold text-gray-900">
+                Recent Feedback
+              </h3>
+
+              <a
+                href="/feedback-inbox"
+                className="text-sm font-medium text-indigo-600 hover:underline"
+              >
+                View all
+              </a>
+
+            </div>
+
+
+            {recentFeedback.length === 0 ? (
+              <p className="mt-6 text-gray-500">
+                No feedback available yet.
               </p>
+            ) : (
 
-            </div>
+              <div className="mt-4 space-y-3">
 
-          </div>
+                {recentFeedback.map((item) => (
 
-          {/* Top Themes */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                  <div
+                    key={item.id}
+                    className="rounded-xl border p-4"
+                  >
 
-            <h3 className="text-xl font-semibold mb-6">
-              🏷️ Top Customer Themes
-            </h3>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <p className="break-words text-gray-800">
+                        {item.feedback}
+                      </p>
 
-              <div className="bg-slate-800 rounded-xl p-5">
-                <p className="text-sm text-slate-400">
-                  #1 Theme
-                </p>
+                      <span
+                        className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                          item.sentiment === "POSITIVE"
+                            ? "bg-green-100 text-green-700"
+                            : item.sentiment === "NEGATIVE"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {item.sentiment || "UNKNOWN"}
+                      </span>
 
-                <h4 className="text-xl font-semibold mt-2">
-                  User Experience
-                </h4>
+                    </div>
 
-                <p className="text-blue-400 mt-2">
-                  324 feedback items
-                </p>
-              </div>
 
-              <div className="bg-slate-800 rounded-xl p-5">
-                <p className="text-sm text-slate-400">
-                  #2 Theme
-                </p>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
 
-                <h4 className="text-xl font-semibold mt-2">
-                  Customer Support
-                </h4>
+                      <span>
+                        Score: {item.score ?? "-"}
+                      </span>
 
-                <p className="text-blue-400 mt-2">
-                  267 feedback items
-                </p>
-              </div>
+                      <span>
+                        Area: {item.featureArea || "Other"}
+                      </span>
 
-              <div className="bg-slate-800 rounded-xl p-5">
-                <p className="text-sm text-slate-400">
-                  #3 Theme
-                </p>
+                      <span>
+                        Status: {item.status}
+                      </span>
 
-                <h4 className="text-xl font-semibold mt-2">
-                  Mobile App
-                </h4>
+                    </div>
 
-                <p className="text-blue-400 mt-2">
-                  198 feedback items
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Trending Issues */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-
-            <h3 className="text-xl font-semibold mb-6">
-              🔥 Trending Issues
-            </h3>
-
-            <div className="space-y-4">
-
-              <div className="bg-slate-800 rounded-xl p-5">
-
-                <div className="flex justify-between gap-4">
-
-                  <div>
-                    <h4 className="font-semibold">
-                      Mobile Performance
-                    </h4>
-
-                    <p className="text-sm text-slate-400 mt-2">
-                      Customers are reporting slow loading
-                      times on mobile devices.
-                    </p>
                   </div>
 
-                  <span className="text-red-400 font-semibold">
-                    +31%
-                  </span>
-
-                </div>
+                ))}
 
               </div>
 
-              <div className="bg-slate-800 rounded-xl p-5">
-
-                <div className="flex justify-between gap-4">
-
-                  <div>
-                    <h4 className="font-semibold">
-                      Customer Support
-                    </h4>
-
-                    <p className="text-sm text-slate-400 mt-2">
-                      Customers want faster responses from
-                      the support team.
-                    </p>
-                  </div>
-
-                  <span className="text-yellow-400 font-semibold">
-                    +12%
-                  </span>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Customer Quotes */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-
-            <h3 className="text-xl font-semibold mb-6">
-              💬 Customer Voice
-            </h3>
-
-            <div className="space-y-4">
-
-              <div className="border-l-4 border-blue-500 pl-5">
-
-                <p className="text-slate-300 italic">
-                  "The new dashboard is very easy to use."
-                </p>
-
-                <p className="text-sm text-slate-500 mt-2">
-                  — Customer feedback #1042
-                </p>
-
-              </div>
-
-              <div className="border-l-4 border-red-500 pl-5">
-
-                <p className="text-slate-300 italic">
-                  "The application loads very slowly on my
-                  mobile phone."
-                </p>
-
-                <p className="text-sm text-slate-500 mt-2">
-                  — Customer feedback #987
-                </p>
-
-              </div>
-
-              <div className="border-l-4 border-yellow-500 pl-5">
-
-                <p className="text-slate-300 italic">
-                  "Customer support should respond faster."
-                </p>
-
-                <p className="text-sm text-slate-500 mt-2">
-                  — Customer feedback #921
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* AI Recommendations */}
-          <div className="bg-blue-950/40 border border-blue-900 rounded-xl p-6">
-
-            <h3 className="text-xl font-semibold text-blue-400">
-              🤖 AI Recommended Actions
-            </h3>
-
-            <div className="mt-5 space-y-4">
-
-              <div className="flex gap-4">
-
-                <span className="text-blue-400 font-bold">
-                  01
-                </span>
-
-                <div>
-                  <h4 className="font-semibold">
-                    Improve mobile performance
-                  </h4>
-
-                  <p className="text-sm text-slate-400 mt-1">
-                    Prioritize mobile optimization and
-                    reduce application loading time.
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="flex gap-4">
-
-                <span className="text-blue-400 font-bold">
-                  02
-                </span>
-
-                <div>
-                  <h4 className="font-semibold">
-                    Improve support response time
-                  </h4>
-
-                  <p className="text-sm text-slate-400 mt-1">
-                    Review support workflows and reduce
-                    customer waiting time.
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="flex gap-4">
-
-                <span className="text-blue-400 font-bold">
-                  03
-                </span>
-
-                <div>
-                  <h4 className="font-semibold">
-                    Prioritize user experience improvements
-                  </h4>
-
-                  <p className="text-sm text-slate-400 mt-1">
-                    Use customer feedback to improve the
-                    most requested product areas.
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
+            )}
 
           </div>
 
