@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 
+const API_URL = "https://loop-feedback-intelligence.onrender.com";
+
 export default function Login() {
+  const [isSignup, setIsSignup] = useState(false);
+
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +27,7 @@ export default function Login() {
       setMessage("");
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        `${API_URL}/api/auth/login`,
         {
           method: "POST",
           headers: {
@@ -53,7 +59,64 @@ export default function Login() {
       console.error("Login error:", error);
 
       setMessage(
-        "Cannot connect to server. Make sure backend is running."
+        "Cannot connect to server. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name || !email || !password) {
+      setMessage("Please fill in all fields.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch(
+        `${API_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Registration failed.");
+        return;
+      }
+
+      setMessage(
+        "Account created successfully. You can now sign in."
+      );
+
+      setName("");
+      setPassword("");
+      setIsSignup(false);
+    } catch (error) {
+      console.error("Signup error:", error);
+
+      setMessage(
+        "Cannot connect to server. Please try again."
       );
     } finally {
       setLoading(false);
@@ -61,32 +124,54 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 p-6 text-white">
       <div className="w-full max-w-md">
 
-        <div className="text-center mb-8">
+        <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-blue-500">
             LOOP
           </h1>
 
-          <p className="text-slate-400 mt-2">
+          <p className="mt-2 text-slate-400">
             Customer Feedback Intelligence
           </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8">
 
-          <h2 className="text-2xl font-bold mb-2">
-            Welcome back
+          <h2 className="mb-2 text-2xl font-bold">
+            {isSignup ? "Create your account" : "Welcome back"}
           </h2>
 
-          <p className="text-slate-400 mb-6">
-            Sign in to your LOOP workspace.
+          <p className="mb-6 text-slate-400">
+            {isSignup
+              ? "Create an account to access your LOOP workspace."
+              : "Sign in to your LOOP workspace."}
           </p>
 
-          <form onSubmit={handleLogin}>
+          <form
+            onSubmit={
+              isSignup ? handleSignup : handleLogin
+            }
+          >
 
-            <label className="block text-sm text-slate-300 mb-2">
+            {isSignup && (
+              <>
+                <label className="mb-2 block text-sm text-slate-300">
+                  Name
+                </label>
+
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="mb-5 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
+                />
+              </>
+            )}
+
+            <label className="mb-2 block text-sm text-slate-300">
               Email
             </label>
 
@@ -95,10 +180,10 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 mb-5 outline-none focus:border-blue-500"
+              className="mb-5 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
             />
 
-            <label className="block text-sm text-slate-300 mb-2">
+            <label className="mb-2 block text-sm text-slate-300">
               Password
             </label>
 
@@ -107,26 +192,47 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 outline-none focus:border-blue-500"
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 py-3 rounded-lg font-semibold"
+              className="mt-6 w-full rounded-lg bg-blue-600 py-3 font-semibold hover:bg-blue-700 disabled:bg-blue-800"
             >
-              {loading ? "Signing In..." : "Sign In"}
+              {loading
+                ? isSignup
+                  ? "Creating Account..."
+                  : "Signing In..."
+                : isSignup
+                ? "Create Account"
+                : "Sign In"}
             </button>
 
           </form>
 
           {message && (
-            <p className="text-red-400 text-sm mt-4">
+            <p className="mt-4 text-center text-sm text-red-400">
               {message}
             </p>
           )}
 
-          <p className="text-slate-500 text-xs text-center mt-6">
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignup(!isSignup);
+                setMessage("");
+              }}
+              className="text-sm font-medium text-blue-400 hover:text-blue-300"
+            >
+              {isSignup
+                ? "Already have an account? Sign In"
+                : "Don't have an account? Create Account"}
+            </button>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-slate-500">
             LOOP Feedback Intelligence Platform
           </p>
 
