@@ -48,7 +48,7 @@ export default function AddFeedback() {
       } else {
         setMessage(`❌ ${data.message}`);
       }
-    } catch (error) {
+    } catch {
       setMessage("❌ Cannot connect to backend.");
     } finally {
       setLoading(false);

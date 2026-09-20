@@ -417,7 +417,7 @@ export default function FeedbackInbox() {
                     <div className="min-w-0 flex-1">
 
                       <p className="break-words text-base leading-relaxed text-white sm:text-lg">
-                        "{item.feedback}"
+                        &quot;{item.feedback}&quot;
                       </p>
 
 
