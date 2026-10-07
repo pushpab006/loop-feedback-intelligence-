@@ -1,11 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function CSVUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("loop-theme");
+
+    if (savedTheme === "light") {
+      setDarkMode(false);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newMode = !darkMode;
+
+    setDarkMode(newMode);
+
+    localStorage.setItem(
+      "loop-theme",
+      newMode ? "dark" : "light"
+    );
+  };
 
   const handleUpload = async () => {
     if (!file) {
@@ -30,6 +50,7 @@ export default function CSVUpload() {
 
     try {
       const formData = new FormData();
+
       formData.append("file", file);
 
       const response = await fetch(
@@ -65,253 +86,376 @@ export default function CSVUpload() {
       if (fileInput) {
         fileInput.value = "";
       }
+
     } catch (error) {
       console.error("CSV upload error:", error);
 
       setMessage(
-        "❌ Cannot connect to backend. Make sure the backend is running on port 5000."
+        "❌ Cannot connect to backend."
       );
+
     } finally {
       setLoading(false);
     }
   };
 
-  function logout() {
+  const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("loopUser");
+
     window.location.href = "/login";
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-
-      {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-slate-800 bg-slate-900 p-6 md:flex">
-
-        <h1 className="mb-2 text-2xl font-bold text-blue-400">
-          LOOP
-        </h1>
-
-        <p className="mb-8 text-xs text-slate-500">
-          Customer Feedback Intelligence
-        </p>
-
-        <nav className="space-y-2">
-
-          <a
-            href="/"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Dashboard
-          </a>
-
-          <a
-            href="/add-feedback"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Add Feedback
-          </a>
-
-          <a
-            href="/feedback-inbox"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Feedback Inbox
-          </a>
-
-          <a
-            href="/themes-trends"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Themes & Trends
-          </a>
-
-          <a
-            href="/ask-loop"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Ask LOOP
-          </a>
-
-          <a
-            href="/reports"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Reports
-          </a>
-
-          <a
-            href="/csv-upload"
-            className="block rounded-lg bg-slate-800 px-4 py-3 text-blue-400"
-          >
-            CSV Upload
-          </a>
-
-          <a
-            href="/users"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            User Management
-          </a>
-
-        </nav>
-
-        <button
-          onClick={logout}
-          className="mt-10 w-full rounded-lg bg-red-600 px-4 py-3 font-medium text-white hover:bg-red-700"
-        >
-          Logout
-        </button>
-
-      </aside>
-
-
-      {/* ================= MOBILE NAVIGATION ================= */}
-      <div className="border-b border-slate-800 bg-slate-900 p-4 md:hidden">
-
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-blue-400">
+    <main
+      className={
+        darkMode
+          ? "min-h-screen bg-slate-950 text-white flex"
+          : "min-h-screen bg-slate-50 text-slate-900 flex"
+      }
+    >{/* Desktop Sidebar */}
+      <aside
+        className={`hidden md:flex w-64 flex-col border-r p-6 ${
+          darkMode
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-200"
+        }`}
+      >
+        {/* Logo */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-purple-500">
             LOOP
           </h1>
 
-          <p className="text-xs text-slate-500">
-            Customer Feedback Intelligence
+          <p
+            className={`text-xs mt-1 ${
+              darkMode
+                ? "text-slate-500"
+                : "text-slate-400"
+            }`}
+          >
+            Customer Intelligence
           </p>
         </div>
 
-        <nav className="grid grid-cols-2 gap-2">
+        {/* Navigation */}
+        <nav className="space-y-2 flex-1">
 
           <a
-            href="/"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            href="/dashboard"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
           >
-            Dashboard
+            📊 Dashboard
           </a>
 
           <a
             href="/add-feedback"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
           >
-            Add Feedback
+            ➕ Add Feedback
           </a>
 
           <a
             href="/feedback-inbox"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
           >
-            Feedback Inbox
-          </a>
-
-          <a
-            href="/themes-trends"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
-          >
-            Themes & Trends
-          </a>
-
-          <a
-            href="/ask-loop"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
-          >
-            Ask LOOP
-          </a>
-
-          <a
-            href="/reports"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
-          >
-            Reports
+            📥 Feedback Inbox
           </a>
 
           <a
             href="/csv-upload"
-            className="rounded-lg bg-slate-800 px-3 py-3 text-sm text-blue-400"
+            className="block px-4 py-3 rounded-xl bg-purple-600 text-white font-medium"
           >
-            CSV Upload
+            📄 CSV Upload
+          </a>
+
+          <a
+            href="/themes-trends"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            📈 Themes & Trends
+          </a>
+
+          <a
+            href="/ask-loop"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            ✨ Ask LOOP
+          </a>
+
+          <a
+            href="/reports"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            📋 Reports
           </a>
 
           <a
             href="/users"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className={`block px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-400 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
           >
-            User Management
+            👥 User Management
           </a>
-
-          <button
-            onClick={logout}
-            className="col-span-2 rounded-lg bg-red-600 px-3 py-3 text-sm font-medium hover:bg-red-700"
-          >
-            Logout
-          </button>
 
         </nav>
 
+        {/* Theme + Logout */}
+        <div className="border-t border-slate-700 pt-5 space-y-2">
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`w-full text-left px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-slate-300 hover:bg-slate-800"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            {darkMode
+              ? "☀️ Light Mode"
+              : "🌙 Dark Mode"}
+          </button>
+
+          <button
+            type="button"
+            onClick={logout}
+            className={`w-full text-left px-4 py-3 rounded-xl ${
+              darkMode
+                ? "text-red-400 hover:bg-red-500/10"
+                : "text-red-600 hover:bg-red-50"
+            }`}
+          >
+            🚪 Logout
+          </button>
+
+        </div>
+      </aside>
+
+
+      {/* Mobile Header */}
+      <div
+        className={`md:hidden fixed top-0 left-0 right-0 z-20 border-b px-5 py-4 flex items-center justify-between ${
+          darkMode
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-200"
+        }`}
+      >
+        <div>
+          <h1 className="text-2xl font-bold text-purple-500">
+            LOOP
+          </h1>
+
+          <p
+            className={`text-xs ${
+              darkMode
+                ? "text-slate-500"
+                : "text-slate-400"
+            }`}
+          >
+            Customer Intelligence
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`px-3 py-2 rounded-lg ${
+              darkMode
+                ? "bg-slate-800"
+                : "bg-slate-100"
+            }`}
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+
+          <button
+            type="button"
+            onClick={logout}
+            className="px-3 py-2 rounded-lg bg-red-500/10 text-red-500"
+          >
+            🚪
+          </button>
+
+        </div>
       </div>
 
 
-      {/* ================= MAIN CONTENT ================= */}
-      <section className="p-4 sm:p-6 md:ml-64 lg:p-8">
+      {/* Main Content */}
+      <section className="flex-1 min-w-0">
 
-        <div className="mx-auto max-w-4xl">
+        <div className="max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-10 pt-24 md:pt-10">{/* Page Header */}
+          <div className="mb-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            CSV Bulk Upload
-          </h2>
+              <div>
+                <h2 className="text-3xl font-bold">
+                  CSV Bulk Upload
+                </h2>
 
-          <p className="mt-2 mb-8 text-sm text-slate-400 sm:text-base">
-            Upload multiple customer feedback items at once.
-          </p>
+                <p
+                  className={`mt-2 ${
+                    darkMode
+                      ? "text-slate-400"
+                      : "text-slate-500"
+                  }`}
+                >
+                  Upload multiple customer feedback records at once.
+                </p>
+              </div>
+
+              <div
+                className={`rounded-xl px-4 py-3 text-sm ${
+                  darkMode
+                    ? "bg-purple-500/10 text-purple-300"
+                    : "bg-purple-50 text-purple-700"
+                }`}
+              >
+                📄 Bulk Import
+              </div>
+
+            </div>
+          </div>
 
 
-          {/* ================= UPLOAD CARD ================= */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-8">
+          {/* Upload Card */}
+          <div
+            className={`rounded-2xl border p-5 sm:p-8 ${
+              darkMode
+                ? "bg-slate-900 border-slate-800"
+                : "bg-white border-slate-200 shadow-sm"
+            }`}
+          >
 
-            <div className="rounded-2xl border-2 border-dashed border-slate-700 p-5 text-center sm:p-10">
+            {/* Upload Area */}
+            <div
+              className={`rounded-2xl border-2 border-dashed p-6 sm:p-12 text-center ${
+                darkMode
+                  ? "border-slate-700 bg-slate-950/40"
+                  : "border-slate-300 bg-slate-50"
+              }`}
+            >
 
-              <div className="mb-4 text-5xl">
+              {/* Icon */}
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500/10 text-3xl">
                 📄
               </div>
 
               <h3 className="text-xl font-semibold">
-                Select CSV File
+                Upload Customer Feedback
               </h3>
 
-              <p className="mt-2 mb-6 text-sm text-slate-400">
-                Upload a CSV file containing customer feedback.
+              <p
+                className={`mx-auto mt-2 max-w-lg text-sm ${
+                  darkMode
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }`}
+              >
+                Select a CSV file containing multiple customer
+                feedback records and import them into LOOP.
               </p>
 
 
               {/* File Input */}
-              <input
-                id="csvFile"
-                type="file"
-                accept=".csv,text/csv"
-                onChange={(e) => {
-                  const selectedFile =
-                    e.target.files?.[0] || null;
+              <div className="mt-7">
+                <label
+                  htmlFor="csvFile"
+                  className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-purple-600 px-6 py-3 font-medium text-white transition hover:bg-purple-700"
+                >
+                  📁 Choose CSV File
+                </label>
 
-                  setFile(selectedFile);
-                  setMessage("");
-                }}
-                className="mx-auto block w-full max-w-md text-sm text-slate-300 file:mr-2 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-white hover:file:bg-blue-700 sm:file:mr-4 sm:file:px-4"
-              />
+                <input
+                  id="csvFile"
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const selectedFile =
+                      e.target.files?.[0] || null;
+
+                    setFile(selectedFile);
+                    setMessage("");
+                  }}
+                />
+              </div>
 
 
               {/* Selected File */}
               {file && (
-                <div className="mt-5 overflow-hidden rounded-xl bg-slate-800 p-4">
+                <div
+                  className={`mx-auto mt-6 max-w-md rounded-xl border p-4 text-left ${
+                    darkMode
+                      ? "border-slate-700 bg-slate-800"
+                      : "border-slate-200 bg-white"
+                  }`}
+                >
 
-                  <p className="text-blue-300">
-                    Selected file
-                  </p>
+                  <div className="flex items-start gap-3">
 
-                  <p className="mt-1 break-all text-white">
-                    {file.name}
-                  </p>
+                    <div className="text-2xl">
+                      📄
+                    </div>
 
-                  <p className="mt-1 text-sm text-slate-500">
-                    {(file.size / 1024).toFixed(1)} KB
-                  </p>
+                    <div className="min-w-0 flex-1">
+
+                      <p
+                        className={`text-xs ${
+                          darkMode
+                            ? "text-slate-400"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        Selected file
+                      </p>
+
+                      <p className="mt-1 break-all font-medium">
+                        {file.name}
+                      </p>
+
+                      <p
+                        className={`mt-1 text-xs ${
+                          darkMode
+                            ? "text-slate-500"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        {(file.size / 1024).toFixed(1)} KB
+                      </p>
+
+                    </div>
+
+                  </div>
 
                 </div>
               )}
@@ -319,67 +463,206 @@ export default function CSVUpload() {
 
               {/* Upload Button */}
               <button
+                type="button"
                 onClick={handleUpload}
                 disabled={!file || loading}
-                className="mt-6 w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 sm:w-auto"
+                className={`mt-6 w-full max-w-md rounded-xl px-6 py-3 font-semibold transition ${
+                  !file || loading
+                    ? "cursor-not-allowed bg-slate-600 text-slate-300"
+                    : "bg-purple-600 text-white hover:bg-purple-700"
+                }`}
               >
                 {loading
-                  ? "Uploading & Analyzing..."
-                  : "Upload CSV"}
+                  ? "⏳ Uploading & Analyzing..."
+                  : "🚀 Upload CSV"}
               </button>
 
-            </div>
-
-
-            {/* Message */}
+            </div>{/* Upload Message */}
             {message && (
-              <div className="mt-6 break-words rounded-xl bg-slate-800 p-4">
-                <p>{message}</p>
+              <div
+                className={`mt-6 rounded-xl border p-4 ${
+                  message.startsWith("✅")
+                    ? darkMode
+                      ? "border-green-500/20 bg-green-500/10 text-green-300"
+                      : "border-green-200 bg-green-50 text-green-700"
+                    : darkMode
+                    ? "border-red-500/20 bg-red-500/10 text-red-300"
+                    : "border-red-200 bg-red-50 text-red-700"
+                }`}
+              >
+                <p className="break-words text-sm font-medium">
+                  {message}
+                </p>
               </div>
             )}
 
 
-            {/* ================= CSV FORMAT ================= */}
-            <div className="mt-8 rounded-xl bg-slate-800 p-4 sm:p-6">
+            {/* CSV Format Guide */}
+            <div
+              className={`mt-8 rounded-2xl border p-5 sm:p-6 ${
+                darkMode
+                  ? "border-slate-800 bg-slate-950"
+                  : "border-slate-200 bg-slate-50"
+              }`}
+            >
 
-              <h3 className="text-lg font-semibold text-blue-300">
-                CSV Format
+              <h3 className="text-lg font-semibold">
+                📋 CSV Format
               </h3>
 
-              <p className="mt-2 text-sm text-slate-400">
-                Your CSV file must contain a column named:
+              <p
+                className={`mt-2 text-sm ${
+                  darkMode
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }`}
+              >
+                Your CSV file should contain a column named:
               </p>
 
-              <div className="mt-4 rounded-lg bg-slate-950 p-4">
-                <code className="text-green-400">
+              {/* Required Column */}
+              <div
+                className={`mt-4 rounded-xl p-4 ${
+                  darkMode
+                    ? "bg-slate-900"
+                    : "bg-white border border-slate-200"
+                }`}
+              >
+                <p
+                  className={`text-xs uppercase tracking-wide ${
+                    darkMode
+                      ? "text-slate-500"
+                      : "text-slate-400"
+                  }`}
+                >
+                  Required column
+                </p>
+
+                <code className="mt-2 block text-purple-400 font-semibold">
                   feedback
                 </code>
               </div>
 
-              <p className="mt-4 text-sm text-slate-400">
-                Example:
+
+              {/* Example */}
+              <p
+                className={`mt-6 text-sm ${
+                  darkMode
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }`}
+              >
+                Example CSV:
               </p>
 
-              <div className="mt-2 overflow-x-auto rounded-lg bg-slate-950 p-4">
-
-              <pre className="min-w-max text-sm text-slate-300">
+              <div className="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-4">
+                <pre className="min-w-max text-sm text-slate-300">
 {`feedback
-'The mobile app is very slow.'
-'Customer support was excellent.'
-'The checkout process keeps crashing.'
-'I love the new dashboard.'`}
-</pre>
+"The mobile app is very slow."
+"Customer support was excellent."
+"The checkout process keeps crashing."
+"I love the new dashboard."`}
+                </pre>
+              </div>
 
+            </div>
+
+
+            {/* Information Cards */}
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+
+              <div
+                className={`rounded-xl border p-4 ${
+                  darkMode
+                    ? "border-slate-800 bg-slate-950"
+                    : "border-slate-200 bg-slate-50"
+                }`}
+              >
+                <div className="text-2xl">📤</div>
+
+                <h4 className="mt-3 font-semibold">
+                  Upload
+                </h4>
+
+                <p
+                  className={`mt-1 text-sm ${
+                    darkMode
+                      ? "text-slate-400"
+                      : "text-slate-500"
+                  }`}
+                >
+                  Import multiple feedback records at once.
+                </p>
+              </div>
+
+
+              <div
+                className={`rounded-xl border p-4 ${
+                  darkMode
+                    ? "border-slate-800 bg-slate-950"
+                    : "border-slate-200 bg-slate-50"
+                }`}
+              >
+                <div className="text-2xl">🤖</div>
+
+                <h4 className="mt-3 font-semibold">
+                  Analyze
+                </h4>
+
+                <p
+                  className={`mt-1 text-sm ${
+                    darkMode
+                      ? "text-slate-400"
+                      : "text-slate-500"
+                  }`}
+                >
+                  LOOP processes the uploaded feedback.
+                </p>
+              </div>
+
+
+              <div
+                className={`rounded-xl border p-4 ${
+                  darkMode
+                    ? "border-slate-800 bg-slate-950"
+                    : "border-slate-200 bg-slate-50"
+                }`}
+              >
+                <div className="text-2xl">📊</div>
+
+                <h4 className="mt-3 font-semibold">
+                  Insights
+                </h4>
+
+                <p
+                  className={`mt-1 text-sm ${
+                    darkMode
+                      ? "text-slate-400"
+                      : "text-slate-500"
+                  }`}
+                >
+                  View the imported feedback in LOOP analytics.
+                </p>
               </div>
 
             </div>
 
           </div>
 
+
+          {/* Footer */}
+          <div
+            className={`mt-8 border-t pt-6 text-center text-sm ${
+              darkMode
+                ? "border-slate-800 text-slate-500"
+                : "border-slate-200 text-slate-400"
+            }`}
+          >
+            LOOP • Customer Feedback Intelligence
+          </div>
+
         </div>
-
       </section>
-
     </main>
   );
 }

@@ -18,6 +18,22 @@ export default function FeedbackInbox() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [sentimentFilter, setSentimentFilter] = useState("ALL");
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("loop-theme");
+
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "loop-theme",
+      darkMode ? "dark" : "light"
+    );
+  }, [darkMode]);
 
   const fetchFeedback = async () => {
     try {
@@ -78,7 +94,7 @@ export default function FeedbackInbox() {
       }
 
       const response = await fetch(
-        `https://loop-feedback-intelligence.onrender.com/api/feedback/$%7Bid%7D/status`,
+        `https://loop-feedback-intelligence.onrender.com/api/feedback/${id}/status`,
         {
           method: "PATCH",
           headers: {
@@ -134,6 +150,20 @@ export default function FeedbackInbox() {
     }
   );
 
+  const totalFeedback = feedbacks.length;
+
+  const positiveCount = feedbacks.filter(
+    (item) => item.sentiment === "POSITIVE"
+  ).length;
+
+  const negativeCount = feedbacks.filter(
+    (item) => item.sentiment === "NEGATIVE"
+  ).length;
+
+  const neutralCount = feedbacks.filter(
+    (item) => item.sentiment === "NEUTRAL"
+  ).length;
+
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("loopUser");
@@ -141,163 +171,245 @@ export default function FeedbackInbox() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main
+      className={`min-h-screen transition-colors duration-300 ${darkMode
+        ? "bg-[#0b0b12] text-white"
+        : "bg-[#f7f7fb] text-gray-900"
+      }`}
+    >
 
-      {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-slate-800 bg-slate-900 p-6 md:flex">
+      {/* DESKTOP SIDEBAR */}
 
-        <h1 className="mb-2 text-2xl font-bold text-blue-400">
-          LOOP
-        </h1>
+      <aside
+        className={`fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r md:flex ${
+          darkMode
+            ? "border-[#242432] bg-[#11111a]"
+            : "border-gray-200 bg-white"
+        }`}
+      >
 
-        <p className="mb-8 text-xs text-slate-500">
-          Customer Feedback Intelligence
-        </p>
+        <div className="flex h-full flex-col p-6">
 
-        <nav className="space-y-2">
+          {/* LOGO */}
 
-          <a
-            href="/"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Dashboard
-          </a>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-purple-600">
+              LOOP
+            </h1>
 
-          <a
-            href="/add-feedback"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Add Feedback
-          </a>
+            <p
+              className={`mt-1 text-xs ${
+                darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              }`}
+            >
+              Customer Feedback Intelligence
+            </p>
+          </div>
 
-          <a
-            href="/feedback-inbox"
-            className="block rounded-lg bg-slate-800 px-4 py-3 text-blue-400"
-          >
-            Feedback Inbox
-          </a>
+          {/* NAVIGATION */}
 
-          <a
-            href="/themes-trends"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Themes & Trends
-          </a>
+          <nav className="space-y-1">
 
-          <a
-            href="/ask-loop"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Ask LOOP
-          </a>
+            <a
+              href="/dashboard"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              Dashboard
+            </a>
 
-          <a
-            href="/reports"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            Reports
-          </a>
+            <a
+              href="/add-feedback"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              Add Feedback
+            </a>
 
-          <a
-            href="/csv-upload"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            CSV Upload
-          </a>
+            <a
+              href="/feedback-inbox"
+              className="block rounded-xl bg-purple-100 px-4 py-3 text-sm font-semibold text-purple-700"
+            >
+              Feedback Inbox
+            </a>
 
-          <a
-            href="/users"
-            className="block rounded-lg px-4 py-3 hover:bg-slate-800"
-          >
-            User Management
-          </a>
+            <a
+              href="/themes-trends"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              Themes & Trends
+            </a>
 
-        </nav>
+            <a
+              href="/ask-loop"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              Ask LOOP
+            </a>
 
-        <button
-          onClick={logout}
-          className="mt-10 w-full rounded-lg bg-red-600 px-4 py-3 font-medium text-white hover:bg-red-700"
-        >
-          Logout
-        </button>
+            <a
+              href="/reports"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              Reports
+            </a>
+
+            <a
+              href="/csv-upload"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              CSV Upload
+            </a>
+
+            <a
+              href="/users"
+              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-purple-50"
+            >
+              User Management
+            </a>
+
+          </nav>
+
+          {/* BOTTOM BUTTONS */}
+
+          <div className="mt-auto">
+
+            <button
+              type="button"
+              onClick={() =>
+                setDarkMode(!darkMode)
+              }
+              className={`mb-3 w-full rounded-xl border px-4 py-3 text-sm ${
+                darkMode
+                  ? "border-[#30303d] hover:bg-[#1d1d29]"
+                  : "border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {darkMode
+                ? "☀️ Light Mode"
+                : "🌙 Dark Mode"}
+            </button>
+
+            <button
+              type="button"
+              onClick={logout}
+              className="w-full rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white hover:bg-red-600"
+            >
+              Logout
+            </button>
+
+          </div>
+
+        </div>
 
       </aside>
 
+      {/* MOBILE NAVIGATION */}
 
-      {/* ================= MOBILE NAVIGATION ================= */}
-      <div className="border-b border-slate-800 bg-slate-900 p-4 md:hidden">
+      <div
+        className={`border-b p-4 md:hidden ${
+          darkMode
+            ? "border-[#242432] bg-[#11111a]"
+            : "border-gray-200 bg-white"
+        }`}
+      >
 
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-blue-400">
-            LOOP
-          </h1>
+        <div className="mb-4 flex items-center justify-between">
 
-          <p className="text-xs text-slate-500">
-            Customer Feedback Intelligence
-          </p>
+          <div>
+            <h1 className="text-xl font-bold text-purple-600">
+              LOOP
+            </h1>
+
+            <p
+              className={`text-xs ${
+                darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              }`}
+            >
+              Customer Feedback Intelligence
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setDarkMode(!darkMode)
+            }
+            className={`rounded-lg border px-3 py-2 text-sm ${
+              darkMode
+                ? "border-[#30303d]"
+                : "border-gray-200"
+            }`}
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+
         </div>
 
         <nav className="grid grid-cols-2 gap-2">
 
           <a
-            href="/"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            href="/dashboard"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             Dashboard
           </a>
 
           <a
             href="/add-feedback"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             Add Feedback
           </a>
 
           <a
             href="/feedback-inbox"
-            className="rounded-lg bg-slate-800 px-3 py-3 text-sm text-blue-400"
+            className="rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700"
           >
             Feedback Inbox
           </a>
 
           <a
             href="/themes-trends"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             Themes & Trends
           </a>
 
           <a
             href="/ask-loop"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             Ask LOOP
           </a>
 
           <a
             href="/reports"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             Reports
           </a>
 
           <a
             href="/csv-upload"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             CSV Upload
           </a>
 
           <a
             href="/users"
-            className="rounded-lg px-3 py-3 text-sm hover:bg-slate-800"
+            className="rounded-lg px-3 py-2 text-sm hover:bg-purple-50"
           >
             User Management
           </a>
 
           <button
+            type="button"
             onClick={logout}
-            className="col-span-2 rounded-lg bg-red-600 px-3 py-3 text-sm font-medium hover:bg-red-700"
+            className="col-span-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
             Logout
           </button>
@@ -306,186 +418,471 @@ export default function FeedbackInbox() {
 
       </div>
 
+      {/* MAIN CONTENT */}
 
-      {/* ================= MAIN CONTENT ================= */}
       <section className="p-4 sm:p-6 md:ml-64 lg:p-8">
 
         <div className="mx-auto max-w-6xl">
 
-          {/* Header */}
-          <div className="mb-8">
+          {/* HEADER */}
 
-            <h2 className="text-2xl font-bold sm:text-3xl">
-              Feedback Inbox
-            </h2>
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
-            <p className="mt-2 text-sm text-slate-400 sm:text-base">
-              View and manage customer feedback.
-            </p>
+            <div>
+
+              <p className="mb-1 text-sm font-medium text-purple-600">
+                Customer Insights
+              </p>
+
+              <h2 className="text-3xl font-bold tracking-tight">
+                Feedback Inbox
+              </h2>
+
+              <p
+                className={`mt-2 ${
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
+              >
+                View, search and manage customer feedback.
+              </p>
+
+            </div>
+
+            <a
+              href="/add-feedback"
+              className="w-fit rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
+            >
+              + Add Feedback
+            </a>
 
           </div>
 
+          {/* SUMMARY CARDS */}
 
-          {/* ================= FILTERS ================= */}
-          <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5">
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+            {/* TOTAL */}
+
+            <div
+              className={`rounded-2xl border p-5 ${
+                darkMode
+                  ? "border-[#242432] bg-[#11111a]"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <p
+                className={`text-sm ${
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
+              >
+                Total Feedback
+              </p>
+
+              <p className="mt-2 text-3xl font-bold">
+                {totalFeedback}
+              </p>
+
+              <p className="mt-1 text-xs text-purple-600">
+                All customer responses
+              </p>
+            </div>
+
+            {/* POSITIVE */}
+
+            <div
+              className={`rounded-2xl border p-5 ${
+                darkMode
+                  ? "border-[#242432] bg-[#11111a]"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <p
+                className={`text-sm ${
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
+              >
+                Positive
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-green-600">
+                {positiveCount}
+              </p>
+
+              <p className="mt-1 text-xs text-green-600">
+                Satisfied customers
+              </p>
+            </div>
+
+            {/* NEGATIVE */}
+
+            <div
+              className={`rounded-2xl border p-5 ${
+                darkMode
+                  ? "border-[#242432] bg-[#11111a]"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <p
+                className={`text-sm ${
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
+              >
+                Negative
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-red-500">
+                {negativeCount}
+              </p>
+
+              <p className="mt-1 text-xs text-red-500">
+                Needs attention
+              </p>
+            </div>
+
+            {/* NEUTRAL */}
+
+            <div
+              className={`rounded-2xl border p-5 ${
+                darkMode
+                  ? "border-[#242432] bg-[#11111a]"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <p
+                className={`text-sm ${
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
+              >
+                Neutral
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-yellow-500">
+                {neutralCount}
+              </p>
+
+              <p className="mt-1 text-xs text-yellow-500">
+                Mixed or neutral feedback
+              </p>
+            </div>
+
+          </div>
+
+          {/* FILTERS */}
+
+          <div
+            className={`mb-8 rounded-2xl border p-4 ${
+              darkMode
+                ? "border-[#242432] bg-[#11111a]"
+                : "border-gray-200 bg-white"
+            }`}
+          >
 
             <div className="flex flex-col gap-4 md:flex-row">
 
-              <input
-                type="text"
-                placeholder="Search feedback..."
-                value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
-                className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
-              />
+              {/* SEARCH */}
 
-              <select
-                value={sentimentFilter}
-                onChange={(e) =>
-                  setSentimentFilter(
-                    e.target.value
-                  )
-                }
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none md:w-56"
-              >
+              <div className="flex-1">
 
-                <option value="ALL">
-                  All Sentiments
-                </option>
+                <label
+                  className={`mb-2 block text-sm font-medium ${
+                    darkMode
+                      ? "text-gray-300"
+                      : "text-gray-700"
+                  }`}
+                >
+                  Search Feedback
+                </label>
 
-                <option value="POSITIVE">
-                  Positive
-                </option>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                  placeholder="Search customer feedback..."
+                  className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-purple-500 ${
+                    darkMode
+                      ? "border-[#30303d] bg-[#181822] text-white placeholder-gray-500"
+                      : "border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400"
+                  }`}
+                />
 
-                <option value="NEGATIVE">
-                  Negative
-                </option>
+              </div>
 
-                <option value="NEUTRAL">
-                  Neutral
-                </option>
+              {/* SENTIMENT */}
 
-              </select>
+              <div className="w-full md:w-56">
+
+                <label
+                  className={`mb-2 block text-sm font-medium ${
+                    darkMode
+                      ? "text-gray-300"
+                      : "text-gray-700"
+                  }`}
+                >
+                  Sentiment
+                </label>
+
+                <select
+                  value={sentimentFilter}
+                  onChange={(e) =>
+                    setSentimentFilter(e.target.value)
+                  }
+                  className={`w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-purple-500 ${
+                    darkMode
+                      ? "border-[#30303d] bg-[#181822] text-white"
+                      : "border-gray-200 bg-gray-50 text-gray-900"
+                  }`}
+                >
+                  <option value="ALL">
+                    All Sentiments
+                  </option>
+
+                  <option value="POSITIVE">
+                    Positive
+                  </option>
+
+                  <option value="NEGATIVE">
+                    Negative
+                  </option>
+
+                  <option value="NEUTRAL">
+                    Neutral
+                  </option>
+                </select>
+
+              </div>
 
             </div>
 
           </div>
 
+          {/* FEEDBACK CONTENT */}
 
-          {/* ================= LOADING ================= */}
-          {loading && (
-            <div className="rounded-2xl bg-slate-900 p-8 text-center text-slate-400">
-              Loading feedback...
+          {loading ? (
+
+            <div
+              className={`rounded-2xl border p-10 text-center ${
+                darkMode
+                  ? "border-[#242432] bg-[#11111a]"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600" />
+
+              <p
+                className={
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }
+              >
+                Loading feedback...
+              </p>
             </div>
-          )}
 
+          ) : error ? (
 
-          {/* ================= ERROR ================= */}
-          {!loading && error && (
-            <div className="rounded-2xl border border-red-800 bg-red-900/30 p-6 text-red-300">
-              {error}
+            <div
+              className={`rounded-2xl border p-8 text-center ${
+                darkMode
+                  ? "border-red-900 bg-[#11111a]"
+                  : "border-red-200 bg-white"
+              }`}
+            >
+              <p className="mb-2 text-lg font-semibold text-red-500">
+                Unable to load feedback
+              </p>
+
+              <p
+                className={
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }
+              >
+                {error}
+              </p>
+
+              <button
+                type="button"
+                onClick={fetchFeedback}
+                className="mt-5 rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white hover:bg-purple-700"
+              >
+                Try Again
+              </button>
             </div>
-          )}
 
+          ) : filteredFeedbacks.length === 0 ? (
 
-          {/* ================= NO RESULTS ================= */}
-          {!loading &&
-            !error &&
-            filteredFeedbacks.length === 0 && (
-              <div className="rounded-2xl bg-slate-900 p-8 text-center text-slate-400">
-                No feedback found.
+            <div
+              className={`rounded-2xl border p-10 text-center ${
+                darkMode
+                  ? "border-[#242432] bg-[#11111a]"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <div className="mb-4 text-4xl">
+                📭
               </div>
-            )}
 
+              <h3 className="text-lg font-semibold">
+                No feedback found
+              </h3>
 
-          {/* ================= FEEDBACK CARDS ================= */}
-          <div className="space-y-5">
+              <p
+                className={`mt-2 text-sm ${
+                  darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
+              >
+                Try changing your search or sentiment filter.
+              </p>
+            </div>
 
-            {!loading &&
-              filteredFeedbacks.map((item) => (
+          ) : (
+            <div className="space-y-4">
+
+              {filteredFeedbacks.map((item) => (
 
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6"
+                  className={`rounded-2xl border p-5 transition hover:shadow-sm ${
+                    darkMode
+                      ? "border-[#242432] bg-[#11111a]"
+                      : "border-gray-200 bg-white"
+                  }`}
                 >
 
-                  <div className="flex flex-col gap-6 lg:flex-row lg:justify-between">
+                  {/* TOP ROW */}
 
-                    {/* Feedback */}
-                    <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 
-                      <p className="break-words text-base leading-relaxed text-white sm:text-lg">
-                        &quot;{item.feedback}&quot;
-                      </p>
+                    <div className="flex-1">
 
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
 
-                      {/* AI INFORMATION */}
-                      <div className="mt-5 flex flex-wrap gap-2 sm:gap-3">
+                        {/* SENTIMENT */}
 
-                        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs sm:text-sm">
-                          {item.sentiment ||
-                            "Not analyzed"}
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            item.sentiment === "POSITIVE"
+                              ? "bg-green-100 text-green-700"
+                              : item.sentiment === "NEGATIVE"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {item.sentiment || "UNKNOWN"}
                         </span>
 
-                        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs sm:text-sm">
-                          Score:{" "}
-                          {item.score ?? "N/A"}
-                        </span>
+                        {/* FEATURE AREA */}
 
-                        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs sm:text-sm">
-                          {item.featureArea ||
-                            "Other"}
-                        </span>
+                        {item.featureArea && (
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs ${
+                              darkMode
+                                ? "bg-[#20202c] text-gray-300"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {item.featureArea}
+                          </span>
+                        )}
 
                       </div>
 
+                      {/* FEEDBACK TEXT */}
 
-                      <p className="mt-4 break-words text-xs text-slate-500">
-                        {new Date(
-                          item.createdAt
-                        ).toLocaleString()}
+                      <p
+                        className={`text-sm leading-6 ${
+                          darkMode
+                            ? "text-gray-200"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {item.feedback}
                       </p>
 
                     </div>
 
+                    {/* SCORE */}
+
+                    <div className="sm:text-right">
+
+                      <p
+                        className={`text-xs ${
+                          darkMode
+                            ? "text-gray-500"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        AI Score
+                      </p>
+
+                      <p className="mt-1 text-xl font-bold text-purple-600">
+                        {item.score ?? "—"}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  {/* BOTTOM ROW */}
+
+                  <div
+                    className={`mt-5 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between ${
+                      darkMode
+                        ? "border-[#242432]"
+                        : "border-gray-100"
+                    }`}
+                  >
+
+                    <div className="text-xs text-gray-500">
+                      {new Date(
+                        item.createdAt
+                      ).toLocaleString()}
+                    </div>
 
                     {/* STATUS */}
-                    <div className="w-full lg:w-48">
 
-                      <p className="mb-2 text-sm text-slate-500">
-                        STATUS
-                      </p>
+                    <select
+                      value={item.status}
+                      onChange={(e) =>
+                        updateStatus(
+                          item.id,
+                          e.target.value
+                        )
+                      }
+                      className={`rounded-lg border px-3 py-2 text-sm outline-none focus:border-purple-500 ${
+                        darkMode
+                          ? "border-[#30303d] bg-[#181822] text-white"
+                          : "border-gray-200 bg-gray-50 text-gray-700"
+                      }`}
+                    >
+                      <option value="NEW">
+                        New
+                      </option>
 
-                      <select
-                        value={
-                          item.status || "NEW"
-                        }
-                        onChange={(e) =>
-                          updateStatus(
-                            item.id,
-                            e.target.value
-                          )
-                        }
-                        className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-3 text-white outline-none focus:border-blue-500"
-                      >
+                      <option value="REVIEWED">
+                        Reviewed
+                      </option>
 
-                        <option value="NEW">
-                          NEW
-                        </option>
-
-                        <option value="REVIEWED">
-                          REVIEWED
-                        </option>
-
-                        <option value="ACTIONED">
-                          ACTIONED
-                        </option>
-
-                      </select>
-
-                    </div>
+                      <option value="RESOLVED">
+                        Resolved
+                      </option>
+                    </select>
 
                   </div>
 
@@ -493,7 +890,9 @@ export default function FeedbackInbox() {
 
               ))}
 
-          </div>
+            </div>
+
+            )}
 
         </div>
 

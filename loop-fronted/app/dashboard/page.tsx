@@ -29,6 +29,22 @@ type Feedback = {
 export default function Dashboard() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("loop-theme");
+
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "loop-theme",
+      darkMode ? "dark" : "light"
+    );
+  }, [darkMode]);
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -43,19 +59,26 @@ export default function Dashboard() {
         }
 
         const response = await fetch(
-  "https://loop-feedback-intelligence.onrender.com/api/feedback",
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+          "https://loop-feedback-intelligence.onrender.com/api/feedback",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         const data = await response.json();
 
-        console.log("Dashboard feedback response:", data);
+        console.log(
+          "Dashboard feedback response:",
+          data
+        );
 
         if (!response.ok) {
-          console.error("Failed to fetch feedback:", data);
+          console.error(
+            "Failed to fetch feedback:",
+            data
+          );
           setFeedbacks([]);
           return;
         }
@@ -70,7 +93,11 @@ export default function Dashboard() {
           setFeedbacks([]);
         }
       } catch (error) {
-        console.error("Dashboard error:", error);
+        console.error(
+          "Dashboard error:",
+          error
+        );
+
         setFeedbacks([]);
       } finally {
         setLoading(false);
@@ -83,40 +110,64 @@ export default function Dashboard() {
   const totalFeedback = feedbacks.length;
 
   const positive = feedbacks.filter(
-    (item) => item.sentiment === "POSITIVE"
+    (item) =>
+      item.sentiment === "POSITIVE"
   ).length;
 
   const negative = feedbacks.filter(
-    (item) => item.sentiment === "NEGATIVE"
+    (item) =>
+      item.sentiment === "NEGATIVE"
   ).length;
 
   const neutral = feedbacks.filter(
-    (item) => item.sentiment === "NEUTRAL"
+    (item) =>
+      item.sentiment === "NEUTRAL"
   ).length;
 
   const sentimentData = [
-    { name: "Positive", value: positive },
-    { name: "Negative", value: negative },
-    { name: "Neutral", value: neutral },
+    {
+      name: "Positive",
+      value: positive,
+    },
+    {
+      name: "Negative",
+      value: negative,
+    },
+    {
+      name: "Neutral",
+      value: neutral,
+    },
   ];
 
-  const themeCount: Record<string, number> = {};
+  const themeCount: Record<
+    string,
+    number
+  > = {};
 
   feedbacks.forEach((item) => {
-    const theme = item.featureArea || "Other";
+    const theme =
+      item.featureArea || "Other";
 
-    themeCount[theme] = (themeCount[theme] || 0) + 1;
+    themeCount[theme] =
+      (themeCount[theme] || 0) + 1;
   });
 
-  const topThemes = Object.entries(themeCount)
-    .sort((a, b) => b[1] - a[1])
+  const topThemes = Object.entries(
+    themeCount
+  )
+    .sort(
+      (a, b) => b[1] - a[1]
+    )
     .slice(0, 5)
     .map(([name, value]) => ({
       name,
       value,
     }));
 
-  const volumeMap: Record<string, number> = {};
+  const volumeMap: Record<
+    string,
+    number
+  > = {};
 
   feedbacks.forEach((item) => {
     const date = new Date(
@@ -127,470 +178,863 @@ export default function Dashboard() {
       (volumeMap[date] || 0) + 1;
   });
 
-  const volumeData = Object.entries(volumeMap).map(
-    ([date, count]) => ({
-      date,
-      count,
-    })
-  );
+  const volumeData = Object.entries(
+    volumeMap
+  ).map(([date, count]) => ({
+    date,
+    count,
+  }));
 
-  const recentFeedback = [...feedbacks]
+  const recentFeedback = [
+    ...feedbacks,
+  ]
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
+        new Date(
+          b.createdAt
+        ).getTime() -
+        new Date(
+          a.createdAt
+        ).getTime()
     )
     .slice(0, 5);
 
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("loopUser");
+
     window.location.href = "/login";
   }
 
+/* ================= THEME COLORS ================= */
+
+  const colors = {
+    page: darkMode
+      ? "bg-[#0b0b12] text-white"
+      : "bg-[#f7f7fb] text-gray-900",
+
+    sidebar: darkMode
+      ? "bg-[#11111a] border-[#242432]"
+      : "bg-white border-gray-200",
+
+    card: darkMode
+      ? "bg-[#15151f] border-[#272735]"
+      : "bg-white border-gray-200",
+
+    text: darkMode
+      ? "text-white"
+      : "text-gray-900",
+
+    muted: darkMode
+      ? "text-gray-400"
+      : "text-gray-500",
+
+    border: darkMode
+      ? "border-[#292936]"
+      : "border-gray-200",
+
+    hover: darkMode
+      ? "hover:bg-[#1d1d29]"
+      : "hover:bg-gray-50",
+  };
+
+  /* ================= LOADING ================= */
+
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-gray-600">
-          Loading dashboard...
-        </p>
+      <main
+        className={`flex min-h-screen items-center justify-center ${
+          darkMode
+            ? "bg-[#0b0b12]"
+            : "bg-[#f7f7fb]"
+        }`}
+      >
+        <div className="text-center">
+
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+
+          <p
+            className={
+              darkMode
+                ? "text-gray-400"
+                : "text-gray-600"
+            }
+          >
+            Loading LOOP dashboard...
+          </p>
+
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main
+      className={`min-h-screen transition-colors duration-300 ${colors.page}`}
+    >
 
-      {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r bg-white p-6 md:flex">
-        <h1 className="text-2xl font-bold text-indigo-600">
-          LOOP
-        </h1>
+    {/* ========================================================= */}
+      {/* DESKTOP SIDEBAR */}
+      {/* ========================================================= */}
 
-        <p className="mt-1 text-sm text-gray-500">
-          Customer Feedback Intelligence
-        </p>
+      <aside
+        className={`fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r md:flex ${colors.sidebar}`}
+      >
+        {/* Logo */}
 
-        <nav className="mt-8 space-y-2">
+        <div className="px-6 pb-6 pt-7">
+          <div className="flex items-center gap-3">
 
-          <a
-            href="/"
-            className="block rounded-lg bg-indigo-50 px-4 py-3 font-medium text-indigo-600"
-          >
-            Dashboard
-          </a>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white">
+              L
+            </div>
 
-          <a
-            href="/add-feedback"
-            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            Add Feedback
-          </a>
+            <div>
+              <h1
+                className={`text-xl font-bold ${colors.text}`}
+              >
+                LOOP
+              </h1>
 
-          <a
-            href="/feedback-inbox"
-            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            Feedback Inbox
-          </a>
+              <p
+                className={`text-[10px] ${colors.muted}`}
+              >
+                Feedback Intelligence
+              </p>
+            </div>
 
-          <a
-            href="/themes-trends"
-            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            Themes & Trends
-          </a>
-
-          <a
-            href="/ask-loop"
-            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            Ask LOOP
-          </a>
-
-          <a
-            href="/reports"
-            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            Reports
-          </a>
-
-          <a
-            href="/csv-upload"
-            className="block rounded-lg px-4 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            CSV Upload
-          </a>
-
-          <a
-            href="/users"
-            className="block rounded-lg px-4 py-3 font-medium text-gray-800 hover:bg-gray-100"
-          >
-            User Management
-          </a>
-        </nav>
-
-        <button
-          onClick={logout}
-          className="mt-10 w-full rounded-lg bg-red-600 px-4 py-3 font-medium text-white hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </aside>
-
-
-      {/* ================= MOBILE NAVIGATION ================= */}
-      <div className="border-b bg-white p-4 md:hidden">
-
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-indigo-600">
-            LOOP
-          </h1>
-
-          <p className="text-xs text-gray-500">
-            Customer Feedback Intelligence
-          </p>
+          </div>
         </div>
 
-        <nav className="grid grid-cols-2 gap-2">
+        {/* Navigation */}
+
+        <div className="flex-1 px-4">
+
+          <p
+            className={`mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider ${colors.muted}`}
+          >
+            Main Menu
+          </p>
+
+          <nav className="space-y-1">
+
+            <a
+              href="/dashboard"
+              className="flex items-center gap-3 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-sm"
+            >
+              <span>⌂</span>
+              Dashboard
+            </a>
+
+            <a
+              href="/add-feedback"
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+            >
+              <span>＋</span>
+              Add Feedback
+            </a>
+
+            <a
+              href="/feedback-inbox"
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+            >
+              <span>▤</span>
+              Feedback Inbox
+            </a>
+
+            <a
+              href="/themes-trends"
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+            >
+              <span>◈</span>
+              Themes & Trends
+            </a>
+
+            <a
+              href="/ask-loop"
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+            >
+              <span>✦</span>
+              Ask LOOP
+            </a>
+
+            <a
+              href="/reports"
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+            >
+              <span>▥</span>
+              Reports
+            </a>
+
+            <a
+              href="/csv-upload"
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+            >
+              <span>⇧</span>
+              CSV Upload
+            </a>
+
+          </nav>
+
+          <p
+            className={`mb-3 mt-8 px-3 text-[11px] font-semibold uppercase tracking-wider ${colors.muted}`}
+          >
+            Administration
+          </p>
 
           <a
-            href="/"
-            className="rounded-lg bg-indigo-50 px-3 py-3 text-sm font-medium text-indigo-600"
+            href="/users"
+            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${colors.muted} ${colors.hover}`}
+          >
+            <span>♙</span>
+            User Management
+          </a>
+
+        </div>
+
+        {/* Logout */}
+
+        <div
+          className={`border-t p-4 ${colors.border}`}
+        >
+          <button
+            onClick={logout}
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-500 transition ${
+              darkMode
+                ? "hover:bg-red-500/10"
+                : "hover:bg-red-50"
+            }`}
+          >
+            <span>↪</span>
+            Logout
+          </button>
+        </div>
+
+      </aside>
+
+      {/* ========================================================= */}
+      {/* MOBILE HEADER */}
+      {/* ========================================================= */}
+
+      <div
+        className={`border-b p-4 md:hidden ${colors.sidebar} ${colors.border}`}
+      >
+        <div className="flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 font-bold text-white">
+              L
+            </div>
+
+            <div>
+              <h1
+                className={`font-bold ${colors.text}`}
+              >
+                LOOP
+              </h1>
+
+              <p
+                className={`text-[10px] ${colors.muted}`}
+              >
+                Feedback Intelligence
+              </p>
+            </div>
+
+          </div>
+
+          {/* Mobile Theme Button */}
+
+          <button
+            onClick={() =>
+              setDarkMode(!darkMode)
+            }
+            className={`rounded-xl border px-3 py-2 text-sm ${colors.border}`}
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+
+        </div>
+
+        {/* Mobile Menu */}
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+
+          <a
+            href="/dashboard"
+            className="rounded-lg bg-indigo-600 px-3 py-2 text-center text-xs font-medium text-white"
           >
             Dashboard
           </a>
 
           <a
             href="/add-feedback"
-            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
             Add Feedback
           </a>
 
           <a
             href="/feedback-inbox"
-            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
-            Feedback Inbox
+            Inbox
           </a>
 
           <a
             href="/themes-trends"
-            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
-            Themes & Trends
+            Themes
           </a>
 
           <a
             href="/ask-loop"
-            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
             Ask LOOP
           </a>
 
           <a
             href="/reports"
-            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
             Reports
           </a>
 
           <a
             href="/csv-upload"
-            className="rounded-lg px-3 py-3 text-sm text-gray-700 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
             CSV Upload
           </a>
 
           <a
             href="/users"
-            className="rounded-lg px-3 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100"
+            className={`rounded-lg px-3 py-2 text-center text-xs ${colors.muted} ${colors.hover}`}
           >
-            User Management
+            Users
           </a>
 
-          <button
-            onClick={logout}
-            className="col-span-2 rounded-lg bg-red-600 px-3 py-3 text-sm font-medium text-white hover:bg-red-700"
-          >
-            Logout
-          </button>
-
-        </nav>
+        </div>
       </div>
 
+      {/* ========================================================= */}
+      {/* MAIN CONTENT */}
+      {/* ========================================================= */}
 
-      {/* ================= MAIN CONTENT ================= */}
       <section className="p-4 sm:p-6 lg:p-8 md:ml-64">
-
         <div className="mx-auto max-w-7xl">
 
-          {/* Header */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Dashboard
-            </h2>
+          {/* ===================================================== */}
+          {/* TOP HEADER */}
+          {/* ===================================================== */}
 
-            <p className="mt-1 text-gray-500">
-              Monitor customer feedback and AI insights.
-            </p>
-          </div>
+          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
+            <div>
 
-          {/* ================= STATS ================= */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mb-2 flex items-center gap-2">
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-sm text-gray-500">
-                Total Feedback
-              </p>
+                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-600">
+                  AI POWERED
+                </span>
 
-              <h3 className="mt-2 text-3xl font-bold text-gray-900">
-                {totalFeedback}
-              </h3>
-            </div>
+                <span
+                  className={`text-xs ${colors.muted}`}
+                >
+                  Customer Intelligence
+                </span>
 
-
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-sm text-gray-500">
-                Positive
-              </p>
-
-              <h3 className="mt-2 text-3xl font-bold text-green-600">
-                {positive}
-              </h3>
-            </div>
-
-
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-sm text-gray-500">
-                Negative
-              </p>
-
-              <h3 className="mt-2 text-3xl font-bold text-red-600">
-                {negative}
-              </h3>
-            </div>
-
-
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-sm text-gray-500">
-                Neutral
-              </p>
-
-              <h3 className="mt-2 text-3xl font-bold text-gray-600">
-                {neutral}
-              </h3>
-            </div>
-
-          </div>
-
-
-          {/* ================= CHARTS ================= */}
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-
-            {/* Sentiment Chart */}
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-
-              <h3 className="text-lg font-semibold text-gray-900">
-                Sentiment Overview
-              </h3>
-
-              {totalFeedback === 0 ? (
-                <div className="flex h-72 items-center justify-center text-gray-500">
-                  No feedback available
-                </div>
-              ) : (
-                <div className="h-72">
-
-                  <ResponsiveContainer
-                    width="100%"
-                    height="100%"
-                  >
-                    <PieChart>
-
-                      <Pie
-                        data={sentimentData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={90}
-                        label
-                      >
-                        {sentimentData.map(
-                          (entry, index) => (
-                            <Cell key={index} />
-                          )
-                        )}
-                      </Pie>
-
-                      <Tooltip />
-
-                    </PieChart>
-                  </ResponsiveContainer>
-
-                </div>
-              )}
-
-            </div>
-
-
-            {/* Volume Chart */}
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-
-              <h3 className="text-lg font-semibold text-gray-900">
-                Feedback Volume
-              </h3>
-
-              {volumeData.length === 0 ? (
-                <div className="flex h-72 items-center justify-center text-gray-500">
-                  No feedback available
-                </div>
-              ) : (
-                <div className="h-72">
-
-                  <ResponsiveContainer
-                    width="100%"
-                    height="100%"
-                  >
-                    <LineChart data={volumeData}>
-
-                      <CartesianGrid strokeDasharray="3 3" />
-
-                      <XAxis dataKey="date" />
-
-                      <YAxis />
-
-                      <Tooltip />
-
-                      <Line
-                        type="monotone"
-                        dataKey="count"
-                        strokeWidth={3}
-                      />
-
-                    </LineChart>
-
-                  </ResponsiveContainer>
-
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-
-          {/* ================= TOP THEMES ================= */}
-          <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
-
-            <h3 className="text-lg font-semibold text-gray-900">
-              Top Themes
-            </h3>
-
-            {topThemes.length === 0 ? (
-              <div className="flex h-64 items-center justify-center text-gray-500">
-                No themes available
               </div>
-            ) : (
-              <div className="mt-4 h-64">
+
+              <h2
+                className={`text-3xl font-bold tracking-tight sm:text-4xl ${colors.text}`}
+              >
+                Dashboard
+              </h2>
+
+              <p
+                className={`mt-1 ${colors.muted}`}
+              >
+                Monitor customer feedback and discover AI-powered insights.
+              </p>
+
+            </div>
+
+            {/* Header Buttons */}
+
+            <div className="flex items-center gap-3">
+
+              {/* Dark / Light Mode */}
+
+              <button
+                onClick={() =>
+                  setDarkMode(!darkMode)
+                }
+                className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition ${colors.border} ${colors.hover}`}
+              >
+                <span>
+                  {darkMode
+                    ? "☀️"
+                    : "🌙"}
+                </span>
+
+                {darkMode
+                  ? "Light Mode"
+                  : "Dark Mode"}
+              </button>
+
+              {/* Add Feedback */}
+
+              <a
+                href="/add-feedback"
+                className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              >
+                + Add Feedback
+              </a>
+
+            </div>
+
+          </div>
+
+          {/* ===================================================== */}
+          {/* SUMMARY CARDS */}
+          {/* ===================================================== */}
+
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+            {/* Total Feedback */}
+
+            <div
+              className={`rounded-2xl border p-5 transition ${colors.card} ${colors.border}`}
+            >
+              <div className="flex items-start justify-between">
+
+                <div>
+                  <p
+                    className={`text-sm font-medium ${colors.muted}`}
+                  >
+                    Total Feedback
+                  </p>
+
+                  <h3
+                    className={`mt-2 text-3xl font-bold ${colors.text}`}
+                  >
+                    {totalFeedback}
+                  </h3>
+
+                  <p className="mt-2 text-xs text-indigo-500">
+                    Customer responses
+                  </p>
+                </div>
+
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-xl">
+                  💬
+                </div>
+
+              </div>
+            </div>
+
+            {/* Positive */}
+
+            <div
+              className={`rounded-2xl border p-5 transition ${colors.card} ${colors.border}`}
+            >
+              <div className="flex items-start justify-between">
+
+                <div>
+                  <p
+                    className={`text-sm font-medium ${colors.muted}`}
+                  >
+                    Positive
+                  </p>
+
+                  <h3
+                    className={`mt-2 text-3xl font-bold ${colors.text}`}
+                  >
+                    {positive}
+                  </h3>
+
+                  <p className="mt-2 text-xs text-green-500">
+                    Positive feedback
+                  </p>
+                </div>
+
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-xl">
+                  😊
+                </div>
+
+              </div>
+            </div>
+
+            {/* Negative */}
+
+            <div
+              className={`rounded-2xl border p-5 transition ${colors.card} ${colors.border}`}
+            >
+              <div className="flex items-start justify-between">
+
+                <div>
+                  <p
+                    className={`text-sm font-medium ${colors.muted}`}
+                  >
+                    Negative
+                  </p>
+
+                  <h3
+                    className={`mt-2 text-3xl font-bold ${colors.text}`}
+                  >
+                    {negative}
+                  </h3>
+
+                  <p className="mt-2 text-xs text-red-500">
+                    Needs attention
+                  </p>
+                </div>
+
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 text-xl">
+                  😟
+                </div>
+
+              </div>
+            </div>
+
+            {/* Neutral */}
+
+            <div
+              className={`rounded-2xl border p-5 transition ${colors.card} ${colors.border}`}
+            >
+              <div className="flex items-start justify-between">
+
+                <div>
+                  <p
+                    className={`text-sm font-medium ${colors.muted}`}
+                  >
+                    Neutral
+                  </p>
+
+                  <h3
+                    className={`mt-2 text-3xl font-bold ${colors.text}`}
+                  >
+                    {neutral}
+                  </h3>
+
+                  <p className="mt-2 text-xs text-gray-500">
+                    Neutral feedback
+                  </p>
+                </div>
+
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 text-xl">
+                  😐
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          {/* ===================================================== */}
+          {/* FEEDBACK VOLUME + RECENT FEEDBACK */}
+          {/* ===================================================== */}
+
+          <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+            {/* ================================================= */}
+            {/* FEEDBACK VOLUME */}
+            {/* ================================================= */}
+
+            <div
+              className={`rounded-2xl border p-6 lg:col-span-2 ${colors.card} ${colors.border}`}
+            >
+
+              <div className="mb-5 flex items-center justify-between">
+
+                <div>
+                  <h3
+                    className={`text-lg font-semibold ${colors.text}`}
+                  >
+                    Feedback Volume
+                  </h3>
+
+                  <p
+                    className={`mt-1 text-sm ${colors.muted}`}
+                  >
+                    Customer feedback received over time
+                  </p>
+                </div>
+
+                <span className="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600">
+                  Activity
+                </span>
+
+              </div>
+
+              <div className="h-64">
 
                 <ResponsiveContainer
                   width="100%"
                   height="100%"
                 >
-                  <BarChart data={topThemes}>
 
-                    <CartesianGrid strokeDasharray="3 3" />
+                  <LineChart
+                    data={volumeData}
+                    margin={{
+                      top: 10,
+                      right: 10,
+                      left: -15,
+                      bottom: 5,
+                    }}
+                  >
 
-                    <XAxis dataKey="name" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                    />
 
-                    <YAxis />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11 }}
+                    />
+
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 11 }}
+                    />
 
                     <Tooltip />
 
-                    <Bar dataKey="value" />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#6366f1"
+                      strokeWidth={3}
+                      dot={{
+                        r: 4,
+                      }}
+                      activeDot={{
+                        r: 6,
+                      }}
+                    />
 
-                  </BarChart>
+                  </LineChart>
 
                 </ResponsiveContainer>
 
               </div>
-            )}
 
-          </div>
+            </div>
 
+            {/* ================================================= */}
+            {/* QUICK INSIGHT */}
+            {/* ================================================= */}
 
-          {/* ================= RECENT FEEDBACK ================= */}
-          <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+            <div
+              className={`rounded-2xl border p-6 ${colors.card} ${colors.border}`}
+            >
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-5">
 
-              <h3 className="text-lg font-semibold text-gray-900">
-                Recent Feedback
-              </h3>
+                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-xl">
+                  ✦
+                </div>
+
+                <h3
+                  className={`text-lg font-semibold ${colors.text}`}
+                >
+                  AI Insight
+                </h3>
+
+                <p
+                  className={`mt-1 text-sm ${colors.muted}`}
+                >
+                  Quick summary from your feedback
+                </p>
+
+              </div>
+
+              <div
+                className={`rounded-xl border p-4 ${colors.border} ${
+                  darkMode
+                    ? "bg-indigo-500/10"
+                    : "bg-indigo-50"
+                }`}
+              >
+
+                <p
+                  className={`text-sm leading-6 ${colors.text}`}
+                >
+                  {totalFeedback === 0
+                    ? "No feedback has been added yet. Add customer feedback to start generating insights."
+                    : positive > negative
+                    ? "Customers are showing more positive sentiment. Keep monitoring negative feedback for improvement opportunities."
+                    : negative > positive
+                    ? "Negative feedback is currently higher. Review customer concerns and identify areas that need improvement."
+                    : "Customer sentiment is currently mixed. Review the feedback themes to understand customer needs."}
+                </p>
+
+              </div>
 
               <a
-                href="/feedback-inbox"
-                className="text-sm font-medium text-indigo-600 hover:underline"
+                href="/ask-loop"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
               >
-                View all
+                Ask LOOP AI →
               </a>
 
             </div>
 
+          </div>
+
+          {/* ===================================================== */}
+          {/* RECENT FEEDBACK */}
+          {/* ===================================================== */}
+
+          <div
+            className={`mb-8 overflow-hidden rounded-2xl border ${colors.card} ${colors.border}`}
+          >
+
+            {/* Header */}
+
+            <div className="flex flex-col gap-3 border-b p-6 sm:flex-row sm:items-center sm:justify-between">
+
+              <div>
+                <h3
+                  className={`text-lg font-semibold ${colors.text}`}
+                >
+                  Recent Feedback
+                </h3>
+
+                <p
+                  className={`mt-1 text-sm ${colors.muted}`}
+                >
+                  Latest customer responses analyzed by LOOP AI
+                </p>
+              </div>
+
+              <a
+                href="/feedback-inbox"
+                className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+              >
+                View All →
+              </a>
+
+            </div>
+
+            {/* Feedback List */}
 
             {recentFeedback.length === 0 ? (
-              <p className="mt-6 text-gray-500">
-                No feedback available yet.
-              </p>
+
+              <div className="p-10 text-center">
+
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-xl">
+                  💬
+                </div>
+
+                <p
+                  className={`font-medium ${colors.text}`}
+                >
+                  No feedback yet
+                </p>
+
+                <p
+                  className={`mt-1 text-sm ${colors.muted}`}
+                >
+                  Add your first customer feedback to see it here.
+                </p>
+
+                <a
+                  href="/add-feedback"
+                  className="mt-5 inline-block rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+                >
+                  + Add Feedback
+                </a>
+
+              </div>
+
             ) : (
 
-              <div className="mt-4 space-y-3">
+              <div className="divide-y">
 
                 {recentFeedback.map((item) => (
 
                   <div
                     key={item.id}
-                    className="rounded-xl border p-4"
+                    className={`p-5 transition ${colors.hover}`}
                   >
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-                      <p className="break-words text-gray-800">
-                        {item.feedback}
-                      </p>
+                      {/* Feedback Text */}
 
-                      <span
-                        className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
-                          item.sentiment === "POSITIVE"
-                            ? "bg-green-100 text-green-700"
-                            : item.sentiment === "NEGATIVE"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {item.sentiment || "UNKNOWN"}
-                      </span>
+                      <div className="min-w-0 flex-1">
 
-                    </div>
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
 
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                              item.sentiment === "POSITIVE"
+                                ? "bg-green-100 text-green-700"
+                                : item.sentiment === "NEGATIVE"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {item.sentiment || "NEUTRAL"}
+                          </span>
 
-                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+                          {item.featureArea && (
 
-                      <span>
-                        Score: {item.score ?? "-"}
-                      </span>
+                            <span
+                              className={`rounded-full border px-2.5 py-1 text-xs ${colors.border} ${colors.muted}`}
+                            >
+                              {item.featureArea}
+                            </span>
 
-                      <span>
-                        Area: {item.featureArea || "Other"}
-                      </span>
+                          )}
 
-                      <span>
-                        Status: {item.status}
-                      </span>
+                        </div>
+
+                        <p
+                          className={`line-clamp-2 text-sm leading-6 ${colors.text}`}
+                        >
+                          {item.feedback}
+                        </p>
+
+                        <p
+                          className={`mt-2 text-xs ${colors.muted}`}
+                        >
+                          {new Date(
+                            item.createdAt
+                          ).toLocaleDateString()}
+                        </p>
+
+                      </div>
+
+                      {/* Score */}
+
+                      <div className="shrink-0">
+
+                        <div
+                          className={`rounded-xl border px-4 py-2 text-center ${colors.border}`}
+                        >
+
+                          <p
+                            className={`text-[10px] uppercase tracking-wide ${colors.muted}`}
+                          >
+                            Score
+                          </p>
+
+                          <p
+                            className={`mt-1 text-lg font-bold ${colors.text}`}
+                          >
+                            {item.score !== null
+                              ? item.score
+                              : "—"}
+                          </p>
+
+                        </div>
+
+                      </div>
 
                     </div>
 
@@ -604,8 +1048,29 @@ export default function Dashboard() {
 
           </div>
 
-        </div>
+          {/* ===================================================== */}
+          {/* FOOTER */}
+          {/* ===================================================== */}
 
+          <div
+            className={`border-t pt-6 ${colors.border}`}
+          >
+
+            <div className="flex flex-col gap-2 text-center text-xs sm:flex-row sm:items-center sm:justify-between sm:text-left">
+
+              <p className={colors.muted}>
+                © 2026 LOOP — Feedback Intelligence Platform
+              </p>
+
+              <p className={colors.muted}>
+                Powered by AI • Built with Next.js
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
       </section>
 
     </main>
