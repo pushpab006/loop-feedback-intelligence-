@@ -358,7 +358,7 @@ export default function AddFeedback() {
                 <p
                   className={`mt-1 text-sm ${colors.muted}`}
                 >
-                  Enter the customer's feedback below.
+                  Enter the customer&apos;s feedback below.
                 </p>
               </div>
 

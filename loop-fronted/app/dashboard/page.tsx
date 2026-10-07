@@ -824,6 +824,127 @@ export default function Dashboard() {
 
             </div>
 
+            {/* SENTIMENT CHART */}
+
+<div
+  className={`rounded-2xl border p-6 ${colors.card} ${colors.border}`}
+>
+  <div className="mb-5">
+    <h3
+      className={`text-lg font-semibold ${colors.text}`}
+    >
+      Sentiment Overview
+    </h3>
+
+    <p
+      className={`mt-1 text-sm ${colors.muted}`}
+    >
+      Overall customer sentiment
+    </p>
+  </div>
+
+  <div className="h-[260px]">
+    <ResponsiveContainer
+      width="100%"
+      height="100%"
+    >
+      <PieChart>
+
+        <Pie
+          data={sentimentData}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={90}
+          paddingAngle={4}
+          dataKey="value"
+        >
+
+          {sentimentData.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={
+                index === 0
+                  ? "#22c55e"
+                  : index === 1
+                  ? "#ef4444"
+                  : "#94a3b8"
+              }
+            />
+          ))}
+
+        </Pie>
+
+        <Tooltip />
+
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+
+</div>
+
+{/* TOP FEEDBACK THEMES */}
+
+<div
+  className={`rounded-2xl border p-6 ${colors.card} ${colors.border}`}
+>
+  <div className="mb-5">
+    <h3
+      className={`text-lg font-semibold ${colors.text}`}
+    >
+      Top Feedback Themes
+    </h3>
+
+    <p
+      className={`mt-1 text-sm ${colors.muted}`}
+    >
+      Most common customer feedback areas
+    </p>
+  </div>
+
+  <div className="h-[260px]">
+    <ResponsiveContainer
+      width="100%"
+      height="100%"
+    >
+      <BarChart
+        data={topThemes}
+        margin={{
+          top: 10,
+          right: 10,
+          left: -15,
+          bottom: 5,
+        }}
+      >
+
+        <CartesianGrid
+          strokeDasharray="3 3"
+        />
+
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 11 }}
+        />
+
+        <YAxis
+          allowDecimals={false}
+          tick={{ fontSize: 11 }}
+        />
+
+        <Tooltip />
+
+        <Bar
+          dataKey="value"
+          fill="#6366f1"
+          radius={[6, 6, 0, 0]}
+        />
+
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+</div>
+
             {/* ================================================= */}
             {/* QUICK INSIGHT */}
             {/* ================================================= */}
