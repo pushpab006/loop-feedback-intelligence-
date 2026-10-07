@@ -68,11 +68,25 @@ router.post(
 
             console.log("CALLING AI FUNCTION");
 
-            const aiResult =
-                await analyzeFeedback(feedback);
+let aiResult = {
+    sentiment: null,
+    score: null,
+    featureArea: null
+};
 
-            console.log("AI ANALYSIS:", aiResult);
+try {
+    aiResult = await analyzeFeedback(feedback);
 
+    console.log("AI ANALYSIS:", aiResult);
+
+} catch (error) {
+
+    console.error(
+        "AI analysis failed. Saving without AI.",
+        error.message
+    );
+
+}
             const result =
                 await db.orm.public.Feedback.create({
                     feedback: feedback,
